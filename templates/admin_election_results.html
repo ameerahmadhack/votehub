@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('admin_dashboard') }}" class="flex items-center space-x-2">
+                        <i class="fas fa-vote-yea text-blue-600 text-2xl"></i>
+                        <span class="font-bold text-xl text-gray-900">VoteHub Admin</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">
+                        <i class="fas fa-user-circle mr-2"></i>{{ session.admin_username }}
+                    </span>
+                    <a href="{{ url_for('admin_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="{{ url_for('admin_elections') }}" class="text-blue-600 hover:text-blue-700 font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Elections
+            </a>
+        </div>
+        
+         Election Header 
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-4xl font-bold text-gray-900">{{ election.title }}</h1>
+                 Fixed now() function call 
+                {% if election.start_time <= now() <= election.end_time %}
+                    <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                        <i class="fas fa-circle text-green-500 text-xs mr-1"></i>ACTIVE
+                    </span>
+                {% elif election.start_time > now() %}
+                    <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                        <i class="fas fa-clock mr-1"></i>UPCOMING
+                    </span>
+                {% else %}
+                    <span class="px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>CLOSED
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-gray-600 text-lg mb-4">{{ election.description }}</p>
+             Added voter participation stats 
+            <div class="grid md:grid-cols-5 gap-4">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-sm text-blue-600 font-semibold mb-1">Total Votes</p>
+                    <p class="text-3xl font-bold text-blue-900">{{ total_votes }}</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <p class="text-sm text-green-600 font-semibold mb-1">Voters Participated</p>
+                    <p class="text-3xl font-bold text-green-900">{{ voters_who_voted|length }}</p>
+                </div>
+                <div class="bg-red-50 rounded-lg p-4">
+                    <p class="text-sm text-red-600 font-semibold mb-1">Didn't Vote</p>
+                    <p class="text-3xl font-bold text-red-900">{{ voters_who_didnt_vote|length }}</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <p class="text-sm text-purple-600 font-semibold mb-1">Candidates</p>
+                    <p class="text-3xl font-bold text-purple-900">{{ candidates|length }}</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-4">
+                    <p class="text-sm text-orange-600 font-semibold mb-1">Turnout</p>
+                    <p class="text-3xl font-bold text-orange-900">
+                        {% if total_voters > 0 %}
+                            {{ ((voters_who_voted|length / total_voters) * 100)|round(1) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        {% if candidates and total_votes > 0 %}
+             Winner 
+            {% set winner = candidates[0] %}
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-2xl p-8 mb-8 text-center">
+                <div class="flex items-center justify-center mb-4">
+                    <i class="fas fa-trophy text-white text-5xl mr-4"></i>
+                    <h2 class="text-4xl font-bold text-white">Current Leader</h2>
+                </div>
+                 Added candidate image display 
+                {% if winner.image_url %}
+                    <img src="{{ winner.image_url }}" alt="{{ winner.name }}" 
+                         class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover">
+                {% endif %}
+                <h3 class="text-5xl font-bold text-white mb-2">{{ winner.name }}</h3>
+                <p class="text-2xl text-white opacity-90 mb-4">{{ winner.party_name }}</p>
+                <div class="flex items-center justify-center space-x-8 text-white">
+                    <div>
+                        <p class="text-4xl font-bold">{{ winner.votes_count }}</p>
+                        <p class="text-lg opacity-90">Votes</p>
+                    </div>
+                    <div>
+                        <p class="text-4xl font-bold">{{ (winner.votes_count / total_votes * 100)|round(1) }}%</p>
+                        <p class="text-lg opacity-90">Share</p>
+                    </div>
+                </div>
+            </div>
+            
+             Results Grid 
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                 Chart 
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Vote Distribution</h3>
+                    <canvas id="resultsChart" width="400" height="300"></canvas>
+                </div>
+                
+                 Detailed Results 
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Detailed Rankings</h3>
+                    <div class="space-y-4">
+                        {% for candidate in candidates %}
+                            <div class="p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-3">
+                                         Added ranking badge with colors 
+                                        {% if loop.index == 1 %}
+                                            <span class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                                                1st
+                                            </span>
+                                        {% elif loop.index == 2 %}
+                                            <span class="w-10 h-10 bg-gradient-to-br from-gray-300 to-gray-500 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
+                                                2nd
+                                            </span>
+                                        {% elif loop.index == 3 %}
+                                            <span class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
+                                                3rd
+                                            </span>
+                                        {% else %}
+                                            <span class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                                                {{ loop.index }}
+                                            </span>
+                                        {% endif %}
+                                         Added candidate image in results 
+                                        {% if candidate.image_url %}
+                                            <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" 
+                                                 class="w-12 h-12 rounded-full object-cover border-2 border-gray-300">
+                                        {% else %}
+                                            <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
+                                                <i class="fas fa-user text-gray-600"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">{{ candidate.name }}</h4>
+                                            <p class="text-sm text-gray-600">{{ candidate.party_name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-2xl font-bold text-blue-600">{{ candidate.votes_count }}</p>
+                                        <p class="text-sm text-gray-500">{{ (candidate.votes_count / total_votes * 100)|round(1) }}%</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all" 
+                                         style="width: {{ (candidate.votes_count / total_votes * 100)|round(1) }}%"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+             Added voter participation tracking 
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                 Voters Who Voted 
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-green-600 mb-6">
+                        <i class="fas fa-check-circle mr-2"></i>Voters Who Voted ({{ voters_who_voted|length }})
+                    </h3>
+                    <div class="max-h-96 overflow-y-auto space-y-2">
+                        {% for voter in voters_who_voted %}
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ voter.full_name }}</p>
+                                    <p class="text-sm text-gray-600 font-mono">{{ voter.voter_id }}</p>
+                                </div>
+                                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                 Voters Who Didn't Vote 
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-red-600 mb-6">
+                        <i class="fas fa-times-circle mr-2"></i>Voters Who Didn't Vote ({{ voters_who_didnt_vote|length }})
+                    </h3>
+                    <div class="max-h-96 overflow-y-auto space-y-2">
+                        {% for voter in voters_who_didnt_vote %}
+                            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ voter.full_name }}</p>
+                                    <p class="text-sm text-gray-600 font-mono">{{ voter.voter_id }}</p>
+                                </div>
+                                <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+             Vote Log 
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Recent Votes</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Voter ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for vote in votes[-20:] %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ vote.voted_at.strftime('%b %d, %Y %H:%M:%S') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-mono text-sm text-blue-600">VH-******</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ vote.ip_address }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-16">
+                <i class="fas fa-chart-pie text-6xl text-gray-400 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-2">No Votes Yet</h3>
+                <p class="text-gray-500">Results will appear once voting begins.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    {% if candidates and total_votes > 0 %}
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        
+        fetch('{{ url_for("api_election_results", election_id=election.id) }}')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Votes',
+                            data: data.data,
+                            backgroundColor: data.colors,
+                            borderWidth: 0,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg flex items-center justify-center px-4">
+    <div class="max-w-6xl w-full">
+        <div class="text-center mb-12">
+            <div class="flex items-center justify-center mb-6">
+                <i class="fas fa-vote-yea text-white text-6xl"></i>
+            </div>
+            <h1 class="text-6xl font-bold text-white mb-4">VoteHub</h1>
+            <p class="text-2xl text-white opacity-90 mb-8">Professional Secure Voting Platform</p>
+            <p class="text-lg text-white opacity-80 max-w-2xl mx-auto">
+                Experience democracy at its finest with our enterprise-grade voting system. 
+                Secure, transparent, and built for the modern age.
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 card-hover">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-shield text-blue-600 text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Admin Portal</h2>
+                    <p class="text-gray-600 mb-6">
+                        Manage elections, create voter IDs, monitor results, and access comprehensive analytics.
+                    </p>
+                    <a href="{{ url_for('admin_login') }}" 
+                       class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all">
+                        Admin Login
+                    </a>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-2xl p-8 card-hover">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-check text-purple-600 text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Voter Portal</h2>
+                    <p class="text-gray-600 mb-6">
+                        Login with your unique Voter ID to participate in elections and view results.
+                    </p>
+                    <a href="{{ url_for('voter_login') }}" 
+                       class="inline-block bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all">
+                        Voter Login
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid md:grid-cols-4 gap-6 text-white">
+            <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center">
+                <i class="fas fa-shield-alt text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg mb-2">Secure</h3>
+                <p class="text-sm opacity-90">Military-grade encryption</p>
+            </div>
+            <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center">
+                <i class="fas fa-bolt text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg mb-2">Fast</h3>
+                <p class="text-sm opacity-90">Real-time results</p>
+            </div>
+            <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center">
+                <i class="fas fa-chart-line text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg mb-2">Analytics</h3>
+                <p class="text-sm opacity-90">Comprehensive insights</p>
+            </div>
+            <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center">
+                <i class="fas fa-mobile-alt text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg mb-2">Mobile</h3>
+                <p class="text-sm opacity-90">Works everywhere</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

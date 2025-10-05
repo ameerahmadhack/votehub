@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('admin_dashboard') }}" class="flex items-center space-x-2">
+                        <i class="fas fa-vote-yea text-blue-600 text-2xl"></i>
+                        <span class="font-bold text-xl text-gray-900">VoteHub Admin</span>
+                    </a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+                        <a href="{{ url_for('admin_voters') }}" class="text-gray-700 hover:text-blue-600 font-medium">Voters</a>
+                        <a href="{{ url_for('admin_elections') }}" class="text-gray-700 hover:text-blue-600 font-medium">Elections</a>
+                        <a href="{{ url_for('admin_audit_logs') }}" class="text-gray-700 hover:text-blue-600 font-medium">Audit Logs</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">
+                        <i class="fas fa-user-circle mr-2"></i>{{ session.admin_username }}
+                    </span>
+                    <a href="{{ url_for('admin_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} alert-dismissible">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p class="text-gray-600">Welcome back, {{ session.admin_username }}! Here's your overview.</p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Voters</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_voters }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Elections</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_elections }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-poll text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Active Elections</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2">{{ active_elections }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Votes Cast</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_votes }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-vote-yea text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <a href="{{ url_for('admin_create_voter') }}" class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white card-hover">
+                <i class="fas fa-user-plus text-3xl mb-3"></i>
+                <h3 class="text-xl font-bold mb-2">Create Voter</h3>
+                <p class="text-blue-100">Generate new voter ID and credentials</p>
+            </a>
+            
+            <a href="{{ url_for('admin_bulk_create_voters') }}" class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white card-hover">
+                <i class="fas fa-users-cog text-3xl mb-3"></i>
+                <h3 class="text-xl font-bold mb-2">Bulk Create Voters</h3>
+                <p class="text-purple-100">Generate multiple voter IDs at once</p>
+            </a>
+            
+            <a href="{{ url_for('admin_create_election') }}" class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white card-hover">
+                <i class="fas fa-plus-circle text-3xl mb-3"></i>
+                <h3 class="text-xl font-bold mb-2">Create Election</h3>
+                <p class="text-green-100">Set up a new voting election</p>
+            </a>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Recent Elections</h3>
+                <div class="space-y-4">
+                    {% for election in recent_elections %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">{{ election.title }}</h4>
+                                <p class="text-sm text-gray-500">{{ election.start_time.strftime('%b %d, %Y') }}</p>
+                            </div>
+                            <a href="{{ url_for('admin_election_results', election_id=election.id) }}" 
+                               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
+                                View
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-4">No elections yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Recent Voters</h3>
+                <div class="space-y-4">
+                    {% for voter in recent_voters %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">{{ voter.full_name }}</h4>
+                                <p class="text-sm text-gray-500">ID: {{ voter.voter_id }}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {% if voter.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if voter.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-4">No voters yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

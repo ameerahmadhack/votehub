@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('admin_dashboard') }}" class="flex items-center space-x-2">
+                        <i class="fas fa-vote-yea text-blue-600 text-2xl"></i>
+                        <span class="font-bold text-xl text-gray-900">VoteHub Admin</span>
+                    </a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+                        <a href="{{ url_for('admin_voters') }}" class="text-gray-700 hover:text-blue-600 font-medium">Voters</a>
+                        <a href="{{ url_for('admin_elections') }}" class="text-gray-700 hover:text-blue-600 font-medium">Elections</a>
+                        <a href="{{ url_for('admin_audit_logs') }}" class="text-blue-600 font-medium border-b-2 border-blue-600">Audit Logs</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">
+                        <i class="fas fa-user-circle mr-2"></i>{{ session.admin_username }}
+                    </span>
+                    <a href="{{ url_for('admin_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Audit Logs</h1>
+            <p class="text-gray-600">Complete activity trail for security and compliance</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for log in logs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ log.timestamp.strftime('%b %d, %Y %H:%M:%S') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium
+                                        {% if 'Login' in log.action %}bg-green-100 text-green-800
+                                        {% elif 'Logout' in log.action %}bg-gray-100 text-gray-800
+                                        {% elif 'Create' in log.action %}bg-blue-100 text-blue-800
+                                        {% elif 'Vote' in log.action %}bg-purple-100 text-purple-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ log.action }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="capitalize">{{ log.user_type }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    {{ log.details }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                    {{ log.ip_address }}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="fas fa-clipboard-list text-4xl mb-4"></i>
+                                    <p>No audit logs yet</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

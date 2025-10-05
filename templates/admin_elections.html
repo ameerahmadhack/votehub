@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('admin_dashboard') }}" class="flex items-center space-x-2">
+                        <i class="fas fa-vote-yea text-blue-600 text-2xl"></i>
+                        <span class="font-bold text-xl text-gray-900">VoteHub Admin</span>
+                    </a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+                        <a href="{{ url_for('admin_voters') }}" class="text-gray-700 hover:text-blue-600 font-medium">Voters</a>
+                        <a href="{{ url_for('admin_elections') }}" class="text-blue-600 font-medium border-b-2 border-blue-600">Elections</a>
+                         Added Notifications link 
+                        <a href="{{ url_for('admin_notifications') }}" class="text-gray-700 hover:text-blue-600 font-medium">Notifications</a>
+                        <a href="{{ url_for('admin_audit_logs') }}" class="text-gray-700 hover:text-blue-600 font-medium">Audit Logs</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">
+                        <i class="fas fa-user-circle mr-2"></i>{{ session.admin_username }}
+                    </span>
+                    <a href="{{ url_for('admin_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} alert-dismissible">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Election Management</h1>
+                <p class="text-gray-600">Create and manage elections</p>
+            </div>
+            <a href="{{ url_for('admin_create_election') }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                <i class="fas fa-plus-circle mr-2"></i>Create Election
+            </a>
+        </div>
+        
+        <div class="grid gap-6">
+            {% for election in elections %}
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <h3 class="text-2xl font-bold text-gray-900">{{ election.title }}</h3>
+                                {% set now = now() %}
+                                 Updated status logic to check manual control 
+                                {% if election.manually_stopped %}
+                                    <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-stop-circle mr-1"></i>STOPPED
+                                    </span>
+                                {% elif election.manual_control and election.manually_started %}
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-circle text-green-500 text-xs mr-1"></i>ACTIVE (MANUAL)
+                                    </span>
+                                {% elif election.start_time <= now <= election.end_time %}
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-circle text-green-500 text-xs mr-1"></i>ACTIVE
+                                    </span>
+                                {% elif election.start_time > now %}
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-clock mr-1"></i>SCHEDULED
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-check-circle mr-1"></i>CLOSED
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-gray-600 mb-4">{{ election.description }}</p>
+                            <div class="grid md:grid-cols-3 gap-4 text-sm text-gray-600">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                                    <span>Start: {{ election.start_time.strftime('%b %d, %Y %H:%M') }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+                                    <span>End: {{ election.end_time.strftime('%b %d, %Y %H:%M') }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock text-blue-600 mr-2"></i>
+                                    <span>Created: {{ election.created_at.strftime('%b %d, %Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2 ml-4">
+                             Added Start/Stop election buttons 
+                            {% if not election.manually_stopped and (election.start_time > now or (election.manual_control and not election.manually_started)) %}
+                                <form method="POST" action="{{ url_for('admin_start_election', election_id=election.id) }}">
+                                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap">
+                                        <i class="fas fa-play mr-2"></i>Start Election
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            {% if (election.manually_started or (election.start_time <= now <= election.end_time)) and not election.manually_stopped %}
+                                <form method="POST" action="{{ url_for('admin_stop_election', election_id=election.id) }}">
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap">
+                                        <i class="fas fa-stop mr-2"></i>Stop Election
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('admin_add_candidates', election_id=election.id) }}" 
+                               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center font-semibold transition-all whitespace-nowrap">
+                                <i class="fas fa-user-plus mr-2"></i>Manage Candidates
+                            </a>
+                            <a href="{{ url_for('admin_election_results', election_id=election.id) }}" 
+                               class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-center font-semibold transition-all whitespace-nowrap">
+                                <i class="fas fa-chart-bar mr-2"></i>View Results
+                            </a>
+                             Added Export CSV button 
+                            <a href="{{ url_for('admin_export_results_csv', election_id=election.id) }}" 
+                               class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-center font-semibold transition-all whitespace-nowrap">
+                                <i class="fas fa-download mr-2"></i>Export CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-16">
+                    <i class="fas fa-poll text-6xl text-gray-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-600 mb-2">No Elections Yet</h3>
+                    <p class="text-gray-500 mb-6">Create your first election to get started.</p>
+                    <a href="{{ url_for('admin_create_election') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all">
+                        <i class="fas fa-plus-circle mr-2"></i>Create Election
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg flex items-center justify-center px-4">
+    <div class="max-w-md w-full">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900">Voter Login</h2>
+                <p class="text-gray-600 mt-2">Enter your unique Voter ID to continue</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} alert-dismissible">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Voter ID</label>
+                    <input type="text" name="voter_id" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                           placeholder="VH-XXXXXX"
+                           pattern="VH-[0-9]{6}">
+                    <p class="text-xs text-gray-500 mt-1">Format: VH-123456</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                    <input type="password" name="password" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                           placeholder="Enter your password">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold text-lg transition-all">
+                    Login to Vote
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <a href="{{ url_for('index') }}" class="text-purple-600 hover:text-purple-700 font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Home
+                </a>
+            </div>
+            
+            <div class="mt-6 p-4 bg-purple-50 rounded-lg">
+                <p class="text-sm text-gray-700 text-center">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Don't have a Voter ID? Contact your administrator.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
